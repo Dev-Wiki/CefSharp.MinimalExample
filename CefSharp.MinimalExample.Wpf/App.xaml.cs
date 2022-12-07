@@ -40,5 +40,17 @@ namespace CefSharp.MinimalExample.Wpf
                 Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
             }
         }
+
+        public static void RunUIThread(Action action)
+        {
+            if (Current.CheckAccess())
+            {
+                action?.Invoke();
+            }
+            else
+            {
+                Current.Dispatcher.BeginInvoke(action);
+            }
+        }
     }
 }
