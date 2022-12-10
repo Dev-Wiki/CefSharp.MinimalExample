@@ -65,7 +65,7 @@
         </Grid>
         <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1">
             <wpf:ChromiumWebBrowser x:Name="Browser"
-                Address="https://www.google.com">
+                Address="https://blog.devwiki.net">
                 <behaviors:Interaction.Behaviors>
                     <behaviours:HoverLinkBehaviour x:Name="HoverLinkBehaviour" />
                 </behaviors:Interaction.Behaviors>
