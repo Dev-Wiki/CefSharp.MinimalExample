@@ -1,4 +1,12 @@
-﻿using System.Windows;
+﻿using System;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Input;
+using CefSharp.Event;
+using CefSharp.JavascriptBinding;
+using CefSharp.Wpf;
+using CefSharp.Wpf.Experimental;
+using CefSharp.Wpf.Internals;
 
 namespace CefSharp.MinimalExample.Wpf
 {
@@ -7,8 +15,23 @@ namespace CefSharp.MinimalExample.Wpf
         public MainWindow()
         {
             InitializeComponent();
+            Browser.BrowserSettings.Javascript = CefState.Enabled;
+            Browser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
             Browser.FrameLoadStart += BrowserOnFrameLoadStart;
             Browser.FrameLoadEnd += BrowserOnFrameLoadEnd;
+            Browser.JavascriptObjectRepository.Register("script", new Script(), false, BindingOptions.DefaultBinder);
+            // Browser.JavascriptObjectRepository.ResolveObject += JavascriptObjectRepositoryOnResolveObject;
+            Browser.WpfKeyboardHandler = new WebBrowserWpfKeyboardHandler(Browser);
+        }
+
+        private void JavascriptObjectRepositoryOnResolveObject(object sender, JavascriptBindingEventArgs e)
+        {
+            var repo = e.ObjectRepository;
+            if (e.ObjectName == "script")
+            {
+                repo.NameConverter = new CamelCaseJavascriptNameConverter();
+                repo.Register("script", new Script(), isAsync: true, options: BindingOptions.DefaultBinder);
+            }
         }
 
         private void BrowserOnFrameLoadEnd(object sender, FrameLoadEndEventArgs e)
@@ -64,6 +87,44 @@ namespace CefSharp.MinimalExample.Wpf
             {
                 JsResultTb.Text = "js is empty!";
             }
+        }
+
+        public string GetWindowName()
+        {
+            return "MainWindow";
+        }
+
+        public void printLog(string log)
+        {
+            Console.WriteLine($"printLog:{log}");
+        }
+    }
+
+    public class WebBrowserWpfKeyboardHandler : WpfImeKeyboardHandler
+    {
+        public WebBrowserWpfKeyboardHandler(ChromiumWebBrowser owner) : base(owner)
+        {
+        }
+        public override void HandleKeyPress(KeyEventArgs e)
+        {
+            base.HandleKeyPress(e);
+            if (e.Key == Key.F12)
+            {
+                owner.ShowDevTools();
+            }
+        }
+    }
+    
+    public class Script
+    {
+        public string GetWindowName()
+        {
+            return "MainWindow";
+        }
+
+        public void PrintLog(string log)
+        {
+            Console.WriteLine($"H5 log:{log}");
         }
     }
 }
